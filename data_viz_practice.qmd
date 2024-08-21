@@ -1,0 +1,206 @@
+---
+title: "eds_221_day8a"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+# General use packages:
+library(tidyverse)
+library(here)
+library(janitor)
+
+# Specifically for plots:
+library(patchwork)
+library(ggrepel)
+library(gghighlight)
+library(paletteer)
+library(ggExtra)
+library(ggbeeswarm)
+
+# And for another dataset we'll explore:
+library(gapminder)
+
+# Spatial
+library(sf)
+```
+
+```{r}
+lizards <- read_csv(here::here("data_tidy", "lizards.csv"))
+```
+
+Let's check out some ways to produce the same graphic using GGplot. 
+
+```{r}
+ggplot(data= lizards, aes(x=total_length, y=weight, color=common_name)) + geom_point()
+```
+
+```{r}
+ggplot(data=lizards) + geom_point(aes(x=total_length, y=weight, color=common_name))
+```
+
+```{r}
+ggplot() +
+  geom_point(data=lizards, aes(x=total_length, y=weight, color=common_name))
+```
+
+These three chunks are different but all produce the same graphic. 
+
+Not every geometry type needs multiple aesthetics. A histogram for example automatically counts the number of occurrences in a variable you select.
+
+```{r}
+ggplot(data=lizards, aes(x=total_length)) + geom_histogram()
+```
+
+Now let's see an example of a jitter plot:
+
+```{r}
+ggplot(data=lizards, aes(y=common_name, x=weight)) + geom_jitter()
+```
+
+A jitter plot is similar to a line plot, but the jitter plot makes it easier to see the distribution of points, as they aren't layered on top of each other on a single axis as like in a point plot (geom_point()). 
+
+```{r}
+ggplot(data=lizards, aes(x=weight)) + geom_histogram(color="blue", 
+                                                     fill="lightblue", 
+                                                     size=0.5, 
+                                                     linewidth=0.2)
+                                            
+```
+
+Playing around with ggplot! Run these chunks and see what is produced. 
+
+```{r}
+ggplot(data=lizards, aes(x=total_length, y=weight)) + 
+  geom_point(color="#E5625E",
+             fill="#EC9F05",
+             shape=22)
+```
+
+```{r}
+ggplot(data=lizards, aes(x=total_length, y=weight)) + 
+  geom_point(aes(color=common_name,
+                 size=total_length),
+             alpha=0.5) +
+  scale_color_brewer(palette = "Set3")
+```
+
+Color Brewer is a collection of pre-loaded palettes in R, but not the default ones! Google this to find the palettes available. 
+coolors.com is also good for generating color palettes, using colors that R recognizes!
+
+Now looking at some themes:
+theme_bw()
+theme_light()
+and so many more!
+
+```{r}
+ggplot(data= lizards, aes(x=site, y=weight)) + 
+         geom_jitter(aes(color=common_name)) + 
+         theme_light()
+```
+
+how to update labels in our figures, using labs:
+
+```{r}
+ggplot(data=lizards, aes(x=total_length, y=weight, color=common_name)) + 
+  geom_point() +
+  labs(x= "Total Length (mm)", 
+       y="Weight (grams)", 
+       title="Lizard Size")
+```
+
+Sometimes if is helpful to split info into multiple graphs, and split it into panels. We can use faceting to make multiple panels at once. 
+You must use the tilde (~) before the variable name you want to facet by. 
+
+```{r}
+ggplot(data=lizards, aes(x=total_length, y=weight, color=common_name)) + 
+  geom_point() +
+  facet_wrap(~common_name,
+             ncol=3, # how many columns do you want?
+             scales="free") + # Y scales are not fixed, each panel has it's own scale
+  labs(x= "Total Length (mm)", 
+       y="Weight (grams)", 
+       title="Lizard Size")
+```
+
+We can also use multiple variables to split up these facets. For this example we will split them by sex and whether or not they have broken tails. 
+
+```{r}
+ggplot(data=lizards, aes(x=total_length, y=weight)) +
+  geom_point() +
+  facet_grid(sex ~ tail)
+```
+
+Sometimes ggplot loves making decisions that are annoying and wrong. Here is a common example, where ggplot lists things alphabetically by default:
+
+```{r}
+lizards_counts <- lizards %>%
+  count(common_name)
+
+ggplot(data=lizards_counts, aes(y=common_name, x=n)) +
+  geom_col()
+```
+
+Running this code, you can see it produces a count of these species but puts them in alphabetical order. How can you make this more intuitive? Ordering them by count instead of alphabetically.
+
+```{r}
+ggplot(data=lizards_counts, aes(y= fct_reorder(common_name, n), x=n)) +
+  geom_col()
+```
+
+Here we used fct_reorder (y,x) to reorder these lizards by count. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
