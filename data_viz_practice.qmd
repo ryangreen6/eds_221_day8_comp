@@ -150,17 +150,131 @@ ggplot(data=lizards_counts, aes(y= fct_reorder(common_name, n), x=n)) +
   geom_col()
 ```
 
-Here we used fct_reorder (y,x) to reorder these lizards by count. 
+Here we used fct_reorder (y,x) to reorder these lizards by count. When faceting by one variable, put the tilde (~) in front of the variable, as in the example below. When faceting two variables, place the tilde between the two variables, as in the second example below. 
 
+Now a mega-example with all this stuff!
+Example 1
+```{r}
+ggplot(data=lizards, aes(x=total_length, y=weight)) + 
+  geom_point(aes(color=common_name, 
+                 shape = common_name),
+             size=2) +
+  theme_minimal() +
+  labs(x="Total length (mm)",
+       y="Weight (g)",
+       color = "Lizard Species") +
+  facet_wrap(~common_name, scales="free")
+```
+Example 2
+```{r}
+ggplot(data=lizards, aes(y=fct_infreq(common_name))) +
+  geom_bar(aes(fill=site)) +
+  theme_minimal() +
+  labs(x="Count",
+       y="Common Name")+
+  facet_grid(sex ~ tail)
+```
 
+After lunch...
 
+scale function can resize the scale of the x or y axes. 
+scale_x for x axis
+scale_y for y
+With this function you can choose the breaks and the limits. You have to provide this information in a vector for the function to read. 
 
+```{r}
+ggplot(data=lizards, aes(x=total_length, y=weight)) +
+  geom_point() +
+  scale_x_continuous(breaks=c(0,250,500), 
+                     limits=c(0,500)) +
+  scale_y_continuous(breaks=seq(from=0, 
+                     to=70, by=10), 
+                     limits=c(0,70))
+```
 
+```{r}
+lizards_counts <- lizards %>%
+  mutate(date=lubridate::mdy(date)) %>%
+  count(date)
 
+ggplot(data=lizards_counts, aes(x=date, y=n)) + 
+  geom_line() +
+  scale_x_date(breaks=scales::breaks_width("2 years"),
+               labels=scales::label_date("'%y")) +
+  labs(x= "Date",
+       y= "Number of Lizards (n)")
+```
 
+```{r}
+ggplot(data=lizards, aes(x=total_length, y=weight)) +
+  geom_point(aes(color=weight)) +
+  #scale_color_gradientn(colors = c("blue", "purple", "darkgreen", "navy", "brown"))
+  #scale_color_steps(low="red", high="black")
+  scale_color_gradient(low="red", high="navy")
+  #scale_color_steps2(low="green", mid="white", high="red", midpoint=150, breaks=c(50,75,150,180,220,280))
+```
 
+you can make objects out of ggplot charts! Below, the information for making a certain figure is stored as 'p'. 
 
+```{r}
+p <- ggplot(data=lizards, aes(x=total_length, y=weight)) +
+  geom_point()
+```
 
+Now we can work with it. This is handy if you want to made changes to a plot without changing the source code. Now you can make all sorts of changes and not have to worry about messing up the original.
+
+```{r}
+p +
+  theme(panel.grid.minor=element_blank(),
+        panel.grid.major=element_line(color="red"),
+        plot.background=element_rect(fill = "pink"),
+        text=element_text(size = 15, family="serif"),
+        axis.text.x=element_text(color="blue"),
+        axis.text.y=element_text(color="green"),
+        panel.background = element_rect(color="orange", fill = "yellow"))
+```
+
+Draw lines on a plot:
+
+```{r}
+p +
+  geom_hline(yintercept=mean(lizards$weight), color="blue") +
+  geom_vline(xintercept = 100, color="orange") +
+  annotate("text", x=100, y=50, label="Cool!", color="brown") +
+  annotate("text", x=350, y=mean(lizards$weight)+2, label="Mean Weight")
+```
+
+Now making a nice graph:
+
+```{r}
+mono <- read_csv(here("data_tidy", "mono.csv"))
+```
+
+```{r}
+ggplot(data=mono, aes(x=year, y=lake_level)) +
+  geom_rect(aes(xmin=1941,
+                xmax=1983,
+                ymin=6350,
+                ymax=6440),
+            fill="gray90")+
+  geom_line()+
+  labs(x="Year", y="Lake Surface Level\n(feet above sea level)\n",
+       title="Mono Lake (1850-2017)",
+       caption= "Data: Mono Basin Clearinghouse") +
+  scale_y_continuous(limits=c(6350, 6440),
+                     breaks=c(6370, 6400, 6430),
+                     labels=scales::label_comma()) +
+  scale_x_continuous(limits=c(1850,2020),
+                     breaks=seq(1850, 2010, by=20),
+                     expand=c(0,0)) +
+  geom_hline(yintercept = 6360, linetype="dashed") +
+  annotate("text", x=1910, y=6360,
+           label="Decreased Shrimp Abundance Expected\n(6,630 feet above sea level)") +
+  annotate("text", x=1962, y=6425,
+           label="Unrestricted Diversions\n(1941-1983)",
+           size = 3) +
+  theme_minimal()
+```
 
 
 
